@@ -1,0 +1,147 @@
+/*
+=======================================================================================
+Stored procedure:Load Bronze layer (Source -> Bronze)
+=======================================================================================
+Script Purpose:
+    This stored procedure loads data into the  bronze schema from external CSV files.
+    -Truncates the bronxe tables before loading data.
+    -Uses the 'BULK INERT' command to load data  from csv files to bronze tables
+
+Parameters:
+    None.
+  This stored Procedure does not accept any parameters or return any values.
+
+  Usage Example:
+      EXEC bronze.load_bronze;
+
+==========================================================================================   
+*/
+Create or Alter procedure bronze.load_bronze as
+Begin
+--Declare variables
+	Declare @start_time DateTime,@End_time DateTime,@batch_start_time Datetime,@batch_end_time Datetime;
+	Begin Try
+		Set @Batch_start_time=Getdate();
+		print'====================================================';
+		print'Loading Bronze Layer';
+		print'====================================================';
+
+		print'----------------------------------------------------';
+		print'Loading CRM Tables'
+		print'----------------------------------------------------';
+
+		Set @start_time = GetDate();
+		
+		print'>> Truncating Table:bronze.crm_cust_info';
+		Truncate Table bronze.crm_cust_info;
+		print'>> Inserting Data Into: bronze.crm_cust_info';
+		BULK INSERT bronze.crm_cust_info
+		from 'C:\Users\Basit\Downloads\sql-data-warehouse-project\datasets\source_crm\cust_info.csv'
+		with (
+			FirstRow=2,
+			FieldTerminator=',',--this means what seperates our data called File Delimiter
+			TabLock				--means we are locking the entire table during loading it.bcz u locked the whole table other users and applications cannot update or change data in that table until you are completely finished they have to wait in line
+		);
+		Set @End_time = GetDate();
+		Print'>> Load Duration:'+Cast(Datediff(second,@start_time,@End_time) as Nvarchar)+ 'Seconds'
+		print'----------------'
+
+		Set @start_time = GetDate();
+		print'>> Truncating Table:bronze.crm_prd_info';
+		Truncate Table bronze.crm_prd_info;
+		print'>> Inserting Data Into:  bronze.crm_prd_info';
+		BULK INSERT bronze.crm_prd_info
+		from 'C:\Users\Basit\Downloads\sql-data-warehouse-project\datasets\source_crm\prd_info.csv'
+		with (
+			FirstRow=2,
+			FieldTerminator=',',
+			TabLock				
+		);
+
+		Set @End_time = GetDate();
+		Print'>> Load Duration:'+Cast(Datediff(second,@start_time,@End_time) as Nvarchar)+ 'Seconds'
+		print'----------------'
+
+		Set @start_time = GetDate();
+		print'>> Truncating Table:crm_sales_details';
+		Truncate Table bronze.crm_sales_details;
+		print'>> Inserting Data Into:bronze.crm_sales_details';
+		BULK INSERT bronze.crm_sales_details
+		from 'C:\Users\Basit\Downloads\sql-data-warehouse-project\datasets\source_crm\sales_details.csv'
+		with (
+			FirstRow=2,
+			FieldTerminator=',',
+			TabLock				
+		);
+		Set @End_time = GetDate();
+		Print'>> Load Duration:'+Cast(Datediff(second,@start_time,@End_time) as Nvarchar)+ 'Seconds'
+		print'----------------'
+
+		print'----------------------------------------------------';
+		print'Loading ERP Tables';
+		print'----------------------------------------------------';
+
+		Set @start_time = GetDate();
+		print'>> Truncating Table:bronze.erp_CUST_AZ12';
+		Truncate table bronze.erp_CUST_AZ12;
+		print'>> Inserting Data Into: bronze.erp_CUST_AZ12';
+		Bulk Insert bronze.erp_CUST_AZ12
+		from 'C:\Users\Basit\Downloads\sql-data-warehouse-project\datasets\source_erp\CUST_AZ12.csv'
+		with (
+			FirstRow = 2,
+			FieldTerminator=',',
+			Tablock
+		);
+
+		Set @End_time = GetDate();
+		Print'>> Load Duration:'+Cast(Datediff(second,@start_time,@End_time) as Nvarchar)+ 'Seconds'
+		print'----------------'
+
+		Set @start_time = GetDate();
+		print'>> Truncating Table:bronze.erp_LOC_A101';
+		Truncate table bronze.erp_LOC_A101;
+		print'>> Inserting Data Into:  bronze.erp_LOC_A101';
+		Bulk Insert bronze.erp_LOC_A101
+		from 'C:\Users\Basit\Downloads\sql-data-warehouse-project\datasets\source_erp\LOC_A101.csv'
+		with (
+			FirstRow = 2,
+			FieldTerminator=',',
+			Tablock
+		);
+
+		Set @End_time = GetDate();
+		Print'>> Load Duration:'+Cast(Datediff(second,@start_time,@End_time) as Nvarchar)+ 'Seconds'
+		print'----------------'
+
+		Set @start_time = GetDate();
+		print'>> Truncating Table:bronze.erp_PX_CAT_G1V2';
+		Truncate table bronze.erp_PX_CAT_G1V2;
+		print'>> Inserting Data Into:bronze.erp_PX_CAT_G1V2';
+		Bulk Insert bronze.erp_PX_CAT_G1V2
+		from 'C:\Users\Basit\Downloads\sql-data-warehouse-project\datasets\source_erp\PX_CAT_G1V2.csv'
+		with (
+			FirstRow = 2,
+			FieldTerminator=',',
+			Tablock
+		);
+
+		Set @End_time = GetDate();
+		Print'>> Load Duration:'+Cast(Datediff(second,@start_time,@End_time) as Nvarchar)+ 'Seconds'
+		print'----------------';
+		
+		set @batch_end_time=Getdate();
+		print'========================================='
+		print'Loading Bronze Layer is Completed';
+		print'>>Total Load Duration:'+Cast(Datediff(second,@batch_start_time,@batch_end_time)as Nvarchar) + 'seconds'
+
+	End Try
+	Begin Catch
+		print'========================================='
+		print'ERROR OCCURED DURING LOADING BRONZE LAYER'
+		print'Error Message'+ ERROR_MESSAGE();
+		print'Error Message'+ CAST(ERROR_NUMBER() AS NVARCHAR);
+		print'Error Message'+ CAST(ERROR_STATE() AS NVarchar)
+		print'========================================='
+	End Catch
+
+End	
