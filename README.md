@@ -38,4 +38,4 @@ This project is licensed under the[MIT License](LICENSE). You are free to use, m
 Hi there! I'm Arsalan Yousuf
 
 
-![Data Architecture](docs/Data_Architecture.png)
+<img src="docs/Data_Architecture.png" alt="Data Architecture"
