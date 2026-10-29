@@ -36,3 +36,6 @@ This project is licensed under the[MIT License](LICENSE). You are free to use, m
 
 🧑‍💻 About Me
 Hi there! I'm Arsalan Yousuf
+
+Data Architecture 
+![Data Architecture](docs/Data_Architecture.png)
